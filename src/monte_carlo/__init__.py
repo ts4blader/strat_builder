@@ -1,3 +1,3 @@
-from .parametic import parametic_simulation
+from .parametric import parametric_simulation
 
-__all__ = ["parametic_simulation"]
+__all__ = ["parametric_simulation"]
