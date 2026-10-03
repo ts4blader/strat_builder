@@ -80,18 +80,28 @@ def parametric_simulation(
         print(f"P(ruin before target): {ruined_before_target.mean():.1%}")
         print(f"P(payout)           : {reached_target.mean():.1%}")
 
+    # return {
+    #     "final_equity": final,
+    #     "max_drawdown": max_dd,
+    #     "ruin_probability": reached_drawdown.mean(),
+    #     "ruin_before_target_probability": ruined_before_target.mean(),
+    #     "ev": ev,
+    #     "payout_probability": reached_target.mean(),
+    #     "metrics": {
+    #         "median_final": np.median(final),
+    #         "pct_5": np.percentile(final, 5),
+    #         "pct_95": np.percentile(final, 95),
+    #         "median_dd": np.median(max_dd),
+    #         "pct_95_dd": np.percentile(max_dd, 95),
+    #     },
+    # }
     return {
-        "final_equity": final,
-        "max_drawdown": max_dd,
-        "ruin_probability": reached_drawdown.mean(),
-        "ruin_before_target_probability": ruined_before_target.mean(),
-        "ev": ev,
-        "payout_probability": reached_target.mean(),
-        "metrics": {
-            "median_final": np.median(final),
-            "pct_5": np.percentile(final, 5),
-            "pct_95": np.percentile(final, 95),
-            "median_dd": np.median(max_dd),
-            "pct_95_dd": np.percentile(max_dd, 95),
-        },
+        "Median final equity": f"{np.median(final):,.0f}",
+        "5th / 95th pct": f"{np.percentile(final, 5):,.0f} / {np.percentile(final, 95):,.0f}",
+        "Median max DD": f"{np.median(max_dd):.1%}",
+        "95th pct max DD": f"{np.percentile(max_dd, 95):.1%}",
+        "EV per simulation": f"{ev:,.2f}",
+        f"P(ruin @ {drawdown_level:.0%})": f"{reached_drawdown.mean():.1%}",
+        "P(ruin before target)": f"{ruined_before_target.mean():.1%}",
+        "P(payout)": f"{reached_target.mean():.1%}",
     }
