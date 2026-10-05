@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
-from arch.bootstrap import OptimalBlockLength
+
+# from arch.bootstrap import OptimalBlockLength
+from arch.bootstrap import optimal_block_length
 
 
 def bootstrap_simulation(
@@ -116,7 +118,7 @@ def block_bootstrap_simulation(
     n_historical = len(trades_R)
 
     # Fit optimal block length selector
-    opt = OptimalBlockLength(trades_R)
+    opt = optimal_block_length(trades_R)
     res = opt.compute()
 
     if n_historical == 0:

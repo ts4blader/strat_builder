@@ -48,20 +48,20 @@ def neighborhood_analysis(df, PARAMS, TARGET, radius=1):
     return best
 
 
-def neighbours_for_radius(df, param_cols, radius, group_cols=("asset", "timeframe")):
+def neighbours_for_radius(df, param_cols, radius):
     """
-    Compute n_neighbours per row for a given radius, grouped by (asset, timeframe).
+    Compute n_neighbours per row for a given radius.
     Returns df with an added 'n_neighbours' column.
     """
     grid = df[param_cols].apply(lambda s: s.rank(method="dense").astype(int) - 1)
 
     out_frames = []
-    for _, g in df.groupby(list(group_cols)):
-        gg = grid.loc[g.index].to_numpy()
-        n_neigh = np.array([(np.abs(gg - r).max(axis=1) <= radius).sum() for r in gg])
-        g = g.copy()
-        g["n_neighbours"] = n_neigh
-        out_frames.append(g)
+
+    gg = grid.loc[grid.index].to_numpy()
+    n_neigh = np.array([(np.abs(gg - r).max(axis=1) <= radius).sum() for r in gg])
+    g = grid.copy()
+    g["n_neighbours"] = n_neigh
+    out_frames.append(g)
 
     return pd.concat(out_frames)
 
