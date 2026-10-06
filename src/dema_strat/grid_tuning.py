@@ -3,7 +3,7 @@ from itertools import product
 from pathlib import Path
 
 import pandas as pd
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 
 def grid_tuning(params, table_name, run_backtest, data, replace_table=False):
