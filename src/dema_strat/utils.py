@@ -16,6 +16,17 @@ from IPython.display import display
 from constants import TABLE_STYLES
 
 
+def load_data(path):
+
+    def load_file(file_path):
+        return load_ohlcv(file_path, use_cache=True, add_vwap=True)
+
+    file_path = Path(path).expanduser()
+    df = load_file(file_path)
+
+    return df
+
+
 def load_data_and_split(path, split_ratio=0.8):
 
     def load_data(file_path):

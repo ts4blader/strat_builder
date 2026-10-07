@@ -6,6 +6,7 @@ from .utils import (
     compare_table,
     db_connect,
     global_style,
+    load_data,
     load_data_and_split,
     stats_pretiier,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "free",
     "global_style",
     "grid_tuning",
+    "load_data",
     "load_data_and_split",
     "load_ohlcv",
     "stats_pretiier",
