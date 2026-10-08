@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from arch.bootstrap import optimal_block_length
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 # params = {
 #     "tp" : 0.15,

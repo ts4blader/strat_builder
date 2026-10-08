@@ -153,6 +153,15 @@ def global_style(df):
     )  # Set standard number formatting
 
 
+def global_style_loose(df):
+    """Applies a unified dark-header corporate theme to any DataFrame."""
+    return df.style.set_table_styles(TABLE_STYLES).format(
+        precision=4,
+        thousands=",",
+        na_rep="N/A",
+    )  # Set standard number formatting
+
+
 def compare_table(dictionary):
     pf = pd.DataFrame(dictionary)
     display(global_style(pf))

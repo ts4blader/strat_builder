@@ -1,3 +1,4 @@
+import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -15,6 +16,7 @@ def sensitivity_check_visualizer(df, PARAM_COLS, TARGET):
     )
 
     SERIES_COLOR = "#468fe9"
+    PEAK_COLOR = "#e8183e"
 
     for i, col in enumerate(PARAM_COLS):
         row = i // n_cols + 1
@@ -27,6 +29,11 @@ def sensitivity_check_visualizer(df, PARAM_COLS, TARGET):
         )
         grouped = grouped.sort_values(col)
 
+        # peak_row = grouped.loc[grouped["max"].idxmax()]
+        # peak_param = peak_row[col]
+        # peak_value = peak_row["max"]
+
+        # Box plot for distribution
         fig.add_trace(
             go.Box(
                 x=df[col].astype(str),
