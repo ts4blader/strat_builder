@@ -1,3 +1,3 @@
-from .walk_forward import walk_forward_test
+from .walk_forward import walk_forward_gen, walk_forward_test
 
-__all__ = ["walk_forward_test"]
+__all__ = ["walk_forward_gen", "walk_forward_test"]

@@ -64,7 +64,7 @@ def propfirm_simulation(log_returns, leverage, p, n_sim, seed=None):
     final_return_list, loss_type_list = [], []
     max_drawdown_list, max_daily_drawdown_list = [], []
 
-    for _ in range(n_sim):
+    for _ in tqdm(range(n_sim), desc="Propfirm simulations"):
         start_idx = rng.integers(0, max_start_idx + 1, size=n_blocks)
         r = np.concatenate(
             [leveraged_returns.values[s : s + block_size] for s in start_idx]

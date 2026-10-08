@@ -7,6 +7,8 @@ import pandas as pd
 from IPython.display import display
 from tqdm.auto import tqdm
 
+from dema_strat.utils import db_connect
+
 METRICS = {
     "sharpe_ratio": lambda pf: pf.sharpe_ratio(),
     "sortino_ratio": lambda pf: pf.sortino_ratio(),
@@ -47,22 +49,40 @@ def _evaluate(pf) -> dict:
     return {name: _safe(fn(pf)) for name, fn in METRICS.items()}
 
 
-def walk_forward(
+def walk_forward_gen(
     data,
     run_backtest,
     param_grid: dict,
+    table_name: str,
+    force_write: bool = False,
     is_years: int = 2,
     oos_months: int = 6,
-    objective: str = "sharpe_ratio",
+    objective: str = "profit_factor",
 ) -> list[dict]:
-    if data.empty:
-        raise ValueError("Loaded data is empty – cannot perform walk-forward test.")
 
+    # 1️⃣ Cache handling
+    conn, cursor = db_connect()
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,),
+    )
+    table_exists = cursor.fetchone() is not None
+    if table_exists:
+        if not force_write:
+            cursor.execute(f"SELECT * FROM {table_name}")
+            rows = cursor.fetchall()
+            col_names = [desc[0] for desc in cursor.description]
+            conn.close()
+            return [dict(zip(col_names, row)) for row in rows]
+        else:
+            cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+            conn.commit()
+    conn.close()
+
+    # 2️⃣ Compute results (same as original implementation)
     combos = _grid(param_grid)
-    windows = list(
-        _windows(data, is_years, oos_months)
-    )  # materialize so tqdm has a total
-    results = []
+    windows = list(_windows(data, is_years, oos_months))
+    results: list[dict] = []
 
     for is_start, is_end, oos_start, oos_end in tqdm(
         windows, desc="Walk-forward windows"
@@ -72,7 +92,7 @@ def walk_forward(
         if is_data.empty or oos_data.empty:
             continue
 
-        # 1) Optimize on in-sample data.
+        # Optimize on in‑sample data
         best_params, best_score = None, None
         for p in tqdm(combos, desc="  Optimizing", leave=False):
             pf, _ = run_backtest(is_data, p)
@@ -82,10 +102,9 @@ def walk_forward(
         if best_params is None:
             continue
 
-        # 2) Re-run best params on IS (for the metrics) and on unseen OOS data.
+        # Re‑run with best parameters on IS and OOS
         is_pf, _ = run_backtest(is_data, best_params)
         oos_pf, _ = run_backtest(oos_data, best_params)
-
         is_m, oos_m = _evaluate(is_pf), _evaluate(oos_pf)
         results.append(
             {
@@ -98,60 +117,54 @@ def walk_forward(
                 **{f"oos_{k}": v for k, v in oos_m.items()},
             }
         )
+
+    # 3️⃣ Store results in DB
+    if results:
+        print(f"Store results in {table_name}")
+        pf = pd.DataFrame(results)
+
+        str_convert_cols = ["params"]
+        for col in str_convert_cols:
+            pf[col] = pf[col].astype(str)
+
+        pf.to_sql(table_name, conn, if_exists="replace", index=False)
     return results
 
 
-def _ratio(oos, is_):
-    # A ratio is meaningless when the IS result is zero/negative.
-    if oos is None or is_ is None or is_ <= 0:
-        return None
-    return oos / is_
-
-
-def calculate_wfe(results: list[dict]) -> dict:
+def calculate_wfe(results: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame]:
     if not results:
-        return {}
+        return pd.DataFrame(), pd.DataFrame()
 
     df = pd.DataFrame(results)
 
-    # Per-window efficiency (annualized return, OOS / IS).
-    df["wfe"] = [
-        _ratio(o, i) for o, i in zip(df["oos_annual_return"], df["is_annual_return"])
-    ]
+    # Compute WFE ratio for each metric
+    for metric in METRICS:
+        oos_col = f"oos_{metric}"
+        is_col = f"is_{metric}"
+        df[f"wfe_{metric}"] = df[oos_col] / df[is_col]
 
-    is_ret = df["is_annual_return"].dropna()
-    oos_ret = df["oos_annual_return"].dropna()
-
-    return {
-        "n_windows": len(df),
-        # Classic WFE: average OOS annualized return / average IS annualized return
-        "wfe_aggregate": _ratio(oos_ret.mean(), is_ret.mean())
-        if len(is_ret) and len(oos_ret)
-        else None,
-        "wfe_median_per_window": df["wfe"].median(),
-        "pct_oos_profitable": (df["oos_annual_return"] > 0).mean(),
-        "mean_is_sharpe": df["is_sharpe_ratio"].mean(),
-        "mean_oos_sharpe": df["oos_sharpe_ratio"].mean(),
-        "windows": df,
-    }
+    return df
 
 
 def walk_forward_test(
     data,
     run_backtest,
     param_grid,
+    table_name,
+    force_write: bool = False,
     is_years=2,
     oos_months=6,
     objective="sharpe_ratio",
 ):
-    results = walk_forward(
-        data, run_backtest, param_grid, is_years, oos_months, objective
+    results = walk_forward_gen(
+        data,
+        run_backtest,
+        param_grid,
+        table_name,
+        force_write,
+        is_years,
+        oos_months,
+        objective,
     )
+
     wfe = calculate_wfe(results)
-    windows = wfe.pop("windows", None)
-    display(wfe)
-
-    if windows is not None:
-        display(windows)
-
-    return wfe, windows

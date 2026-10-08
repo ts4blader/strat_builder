@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 
-def grid_tuning(params, table_name, run_backtest, data, replace_table=False):
+def grid_tuning(params, table_name, run_backtest, data, force=False):
 
     TABLE_NAME = table_name
 
@@ -43,7 +43,7 @@ def grid_tuning(params, table_name, run_backtest, data, replace_table=False):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    if replace_table:
+    if force:
         cursor.execute(f"DROP TABLE IF EXISTS {TABLE_NAME}")
 
     cursor.execute(create_sql)
