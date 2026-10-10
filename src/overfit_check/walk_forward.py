@@ -7,7 +7,7 @@ import pandas as pd
 from IPython.display import display
 from tqdm.auto import tqdm
 
-from dema_strat.utils import db_connect
+from core.utils import db_connect
 
 METRICS = {
     "sharpe_ratio": lambda pf: pf.sharpe_ratio(),

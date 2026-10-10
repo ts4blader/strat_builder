@@ -4,7 +4,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
-from dema_strat import global_style
+from core import global_style
 
 
 def kmeans_params_finder(df, PARAMS):

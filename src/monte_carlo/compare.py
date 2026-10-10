@@ -1,4 +1,4 @@
-from dema_strat import compare_table
+from core import compare_table
 
 from .bootstrap import block_bootstrap_simulation
 from .parametric import parametric_simulation

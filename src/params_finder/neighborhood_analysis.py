@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from IPython.display import display
 
-from dema_strat import global_style
+from core import global_style
 
 
 def neighborhood_analysis(df, PARAMS, TARGET, radius=1):
