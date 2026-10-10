@@ -168,3 +168,43 @@ def walk_forward_test(
     )
 
     wfe = calculate_wfe(results)
+
+    # Plot WFE of each metric on the same Plotly chart
+    # If wfe is empty, we skip plotting.
+    if not wfe.empty:
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        # Use the index (window number) as x-axis; alternatively use is_end dates.
+        x_vals = wfe.index
+        for metric in METRICS:
+            col = f"wfe_{metric}"
+            if col in wfe.columns:
+                fig.add_trace(
+                    go.Scatter(
+                        x=x_vals,
+                        y=wfe[col],
+                        mode="lines+markers",
+                        name=metric,
+                    )
+                )
+        # Add horizontal red line at y=0.5
+        fig.add_shape(
+            type="line",
+            x0=min(x_vals),
+            x1=max(x_vals),
+            y0=0.5,
+            y1=0.5,
+            line={"color": "red", "dash": "dash"},
+        )
+        fig.update_layout(
+            title=f"Walk‑Forward Evaluation (WFE) Ratios: {is_years}YRS window, {oos_months}MTHS step",
+            xaxis_title="Window",
+            yaxis_title="WFE Ratio",
+            template="plotly_dark",
+            font_family="JetBrainsMono Nerd Font",
+        )
+        # In a Jupyter environment, displaying the figure will render it.
+        fig.show()
+
+    return results, wfe
