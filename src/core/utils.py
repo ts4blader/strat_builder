@@ -16,6 +16,20 @@ from IPython.display import display
 from constants import TABLE_STYLES
 
 
+def get_project_root() -> Path:
+    """Finds the root directory by looking for a marker file."""
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        if (parent / ".git").exists() or (parent / "requirements.txt").exists():
+            return parent
+    return current.parent  # Fallback
+
+
+# 1. Define your paths globally
+ROOT_DIR = get_project_root()
+DB_PATH = ROOT_DIR / "src" / "backtest_results.db"
+
+
 def load_data(path):
 
     def load_file(file_path):
@@ -137,8 +151,7 @@ def compare_benchmark(portfolio, data):
 
 def db_connect():
 
-    db_path = Path("../backtest_results.db")
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     return conn, cursor

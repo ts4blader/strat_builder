@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path.cwd().parent))
 from constants import CASH, COMMISSION
 
 
-class STRAT:
+class DEMA_STRAT:
     def __init__(self, data, params):
         self.params = params or {
             "ema_period": 9,
