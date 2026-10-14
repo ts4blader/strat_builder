@@ -15,6 +15,7 @@ class STRAT:
     def __init__(self, CASH, COMMISSION, RISK_PER_TRADE):
 
         self.NAME = "DEMA be-exit"
+        self.CODE = "dema_be_exit"
         self.CASH = CASH
         self.COMMISSION = COMMISSION
         self.RISK_PER_TRADE = RISK_PER_TRADE
@@ -95,7 +96,7 @@ class STRAT:
         sizer = sl_based_sizer(risk_per_trade=self.RISK_PER_TRADE, sl_dists=sl_dist)
 
         portfolio = vbt.Portfolio.from_signals(
-            close=self.data["Close"],
+            close=data["Close"],
             entries=long_signal,
             exits=long_exits,
             short_entries=short_signal,
@@ -107,4 +108,4 @@ class STRAT:
             freq=freq,
         )
 
-        return portfolio
+        return portfolio, signals

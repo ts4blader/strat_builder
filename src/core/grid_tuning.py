@@ -65,7 +65,7 @@ def grid_tuning(params, table_name, run_backtest, data, force=False):
         name = "_".join(str(v) for v in combo)
 
         try:
-            portfolio, strat = run_backtest(data, params=combo_params)
+            portfolio, _ = run_backtest(data, params=combo_params)
             stats = portfolio.stats()
 
             result_values = []
