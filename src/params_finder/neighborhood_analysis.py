@@ -5,7 +5,7 @@ from IPython.display import display
 from core import global_style
 
 
-def neighborhood_analysis(df, PARAMS, TARGET, radius=1):
+def neighborhood_analysis(df, PARAMS, TARGET, radius=1, target_weight=0.5):
     param_cols = list(PARAMS)
     df = df.replace([np.inf, -np.inf], np.nan).dropna(subset=[TARGET])
 
@@ -28,11 +28,15 @@ def neighborhood_analysis(df, PARAMS, TARGET, radius=1):
 
     # edge combos have few neighbours — their smoothed value is unreliable
     core = df[df["n_neighbours"] >= 0.6 * df["n_neighbours"].max()]
+
+    smoothed_weight = 1 - target_weight
     core["score"] = (
-        core["smoothed"] * 0.7 + core[TARGET] * 0.3
+        core["smoothed"] * smoothed_weight + core[TARGET] * target_weight
     )  # adjust weights to taste
 
-    print(f"Target: {TARGET}, SCORE = smoothed * 0.7 + TARGET * 0.3")
+    print(
+        f"Target: {TARGET}, SCORE = smoothed * {smoothed_weight} + TARGET * {target_weight}"
+    )
     display(
         global_style(
             core.nlargest(10, columns=["score"])[

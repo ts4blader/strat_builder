@@ -77,7 +77,6 @@ def walk_forward_gen(
         else:
             cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
             conn.commit()
-    conn.close()
 
     # 2️⃣ Compute results (same as original implementation)
     combos = _grid(param_grid)
@@ -128,6 +127,8 @@ def walk_forward_gen(
             pf[col] = pf[col].astype(str)
 
         pf.to_sql(table_name, conn, if_exists="replace", index=False)
+
+    conn.close()
     return results
 
 
